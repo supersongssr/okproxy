@@ -469,8 +469,32 @@ readInstallProtocolType() {
     fi
 }
 
+# 2023-12-28 diy nginx config ; 1panel! 
+checkBTPanel(){
+
+    echo
+    echoContent yellow "请输入要配置的域名 例: www.v2ray-agent.com --->"
+    read -r -p "域名:" domain
+    
+    if [[ -z ${domain} ]]; then
+        echoContent red "  域名不可为空--->"
+        initTLSNginxConfig 3
+    else
+        dnsTLSDomain=$(echo "${domain}" | awk -F "." '{$1="";print $0}' | sed 's/^[[:space:]]*//' | sed 's/ /./g')
+        if [[ "${selectCoreType}" == "1" ]]; then
+            customPortFunction
+        fi
+        # 修改配置
+    fi
+
+    btDomain=$domain
+    mkdir -p /etc/nginx/xray-nginx
+    nginxStaticPath='etc/nginx/xray-nginx/'
+
+}
+
 # 检查是否安装宝塔
-checkBTPanel() {
+checkBTPanel_DEL() {
     if [[ -n $(pgrep -f "BT-Panel") ]]; then
         # 读取域名
         if [[ -d '/www/server/panel/vhost/cert/' && -n $(find /www/server/panel/vhost/cert/*/fullchain.pem) ]]; then
