@@ -12,6 +12,7 @@ InitTools(){
 	[[ $(type -P wget) ]] || apt install -y wget 
 	[[ $(type -P vnstat) ]] || apt install -y vnstat 
 	[[ $(type -P unzip) ]] || apt install -y unzip
+	[[ $(type -P git)]] || apt isntall -y git 
 }
 
 MakeFloder(){
@@ -22,7 +23,7 @@ MakeFloder(){
 
 DefaultConfigXray(){
 
-cat > /etc/xray/config.json << EOF 
+	cat > /etc/xray/config.json << EOF 
 {
 	"log": {
 		"loglevel": "warning"
@@ -108,10 +109,10 @@ cat > /etc/xray/config.json << EOF
 }
 EOF 
 
+
 }
 
 SystemdXray(){
-
 # insatll xray systemd
 cat > /etc/systemd/system/xray.service << EOF
 [Unit]
@@ -144,15 +145,15 @@ EOF
 InstallXray(){
 	cd $TEMP_PATH 
 
-	curl -LOk $XRAY_CORE_DOWNLOAD_PATH
-	unzip xray-linux-64.zip
+	curl -Lk $XRAY_CORE_DOWNLOAD_PATH -o xray-core.zip
+	unzip -o xray-core.zip
 	
 	mv -f xray /etc/xray/bin/xray 
 	mv -f geosite.dat /etc/xray/bin/
 	mv -f geoip.dat /etc/xray/bin/
 	chmod +x /etc/xray/bin/xray
 
-	DefaultConfigXray
+	# DefaultConfigXray
 
 	SystemdXray
 	
@@ -195,8 +196,8 @@ Main(){
 	TEMP_PATH=$(mktemp -d)
 	# try get the package 
 	cd $TEMP_PATH 
-	curl -LOk $OKPROXY_DOWNLOAD_PATH 
-	unzip okproxy.zip
+	curl -Lk $OKPROXY_DOWNLOAD_PATH  -o okproxy.zip
+	unzip -o okproxy.zip
 	# make floder 
 	MakeFloder 
 	# move xray files to /etc/xray 
