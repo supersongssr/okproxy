@@ -1,76 +1,26 @@
 #!/bin/bash
 
 
+OKPROXY_DOWNLOAD_PATH=github.comxxxxx  # 安装包下载地址
+XRAY_CORE_DOWNLOAD_PATH=https://github.com/xtls/xray-Core/releases/latest/download/xray-linux-64.zip
+PROXY_CORE=xray  # xray v2fly v2ray ...
+HTTP_SERVER=
+# httpServer 
 
-# default config 
-PROXY_CORE=xray
-IS_CADDY_INSTALLED=
-IS_NGINX_INSTALLED=
-
-# 随机获取 UUID
-GetUUID() {
-    RETURN=$(cat /proc/sys/kernel/random/uuid)
+InitTools(){
+	[[ $(type -P curl) ]] || apt install -y curl 
+	[[ $(type -P wget) ]] || apt install -y wget 
+	[[ $(type -P vnstat) ]] || apt install -y vnstat 
+	[[ $(type -P unzip) ]] || apt install -y unzip
 }
 
-# 随机获取密码  $1= 长度 ,默认 8位
-GetPassword(){
-    _len=$1
-    [[ $_len ]] || _len=8
-    _uuid=$(cat /proc/sys/kernel/random/uuid)
-    RETURN=${_uuid:0:$_len}
+MakeFloder(){
+	mkdir -p /etc/xray 
+	mkdir -p /etc/xray/bin/
+	mkdir -p /etc/xray/conf/ 
 }
 
-
-# 判断端口是否被占用
-IsPortUsed() { # $1 = port 
-    if [[ $(type -P netstat) ]]; then
-        [[ ! $_usedPort ]] && _usedPort="$(netstat -tunlp | sed -n 's/.*:\([0-9]\+\).*/\1/p' | sort -nu)"
-        echo $_usedPort | sed 's/ /\n/g' | grep ^${1}$
-        return
-    fi
-    if [[ $(type -P ss) ]]; then
-        [[ ! $_usedPort ]] && _usedPort="$(ss -tunlp | sed -n 's/.*:\([0-9]\+\).*/\1/p' | sort -nu)"
-        echo $_usedPort | sed 's/ /\n/g' | grep ^${1}$
-        return
-    fi
-}
-
-# 获取一个随机端口
-GetPort() {
-    _count=0
-    while :; do
-        ((_count++))
-        if [[ $_count -ge 99 ]]; then
-            echo "试了99次都没拿到可用端口,绝了"
-            break
-        fi
-        _port=$(shuf -i 445-65535 -n 1)
-        [[ ! $(IsPortUsed $_port) ]] && break
-    done
-    RETURN=$_port 
-}
-
-
-
-TEMP_PATH=$(mktemp -d)
-cd $TEMP_PATH
-#
-### install xray core 
-
-link=https://github.com/xtls/xray-Core/releases/latest/download/xray-linux-64.zip
-curl -LOk $link
-unzip xray-linux-64.zip
-mkdir -p /etc/xray/bin/
-mkdir -p /etc/xray/conf/ 
-mv -f xray /etc/xray/bin/xray 
-mv -f geosite.dat /etc/xray/bin/
-mv -f geoip.dat /etc/xray/bin/
-chmod +x /etc/xray/bin/xray
-
-
-
-
-# set config , default api 
+DefaultConfigXray(){
 
 cat > /etc/xray/config.json << EOF 
 {
@@ -158,61 +108,9 @@ cat > /etc/xray/config.json << EOF
 }
 EOF 
 
-# set vless-tcp-vision-reality-tls.sh 
-
-GetPort 
-port=$RETURN
-GetUUID 
-uuid=$RETURN 
-security=reality
-flow=xtls-rprx-vision
-
-# set config, add vless-tcp-vision-reality-tls
-cat > /etc/xray/conf/vless-tcp-vision-reality-tls.json << EOF 
-{
-	"inbounds": [
-		{
-			"port": ${port},
-			"protocol": "vless",
-			"tag": "vless-vision-reality",
-			"settings": {
-				"clients": [
-					{
-						"id": "${uuid}",
-						"flow": "${flow}"
-					}
-				],
-				"decryption": "none",
-				"fallbacks": [
-					{
-						"dest": "31305",
-						"xver": 1
-					}
-				]
-			},
-			"streamSettings": {
-				"network": "tcp",
-				"security": "reality",
-				"realitySettings": {
-					"show": false,
-					"dest": "${realityServerName}:${realityDomainPort}",
-					"xver": 0,
-					"serverNames": [
-						"${realityServerName}"
-					],
-					"privateKey": "${realityPrivateKey}",
-					"publicKey": "${realityPublicKey}",
-					"maxTimeDiff": 70000,
-					"shortIds": [
-						"",
-						"6ba85179e30d4fc2"
-					]
-				}
-			}
-		}
-	]
 }
-EOF 
+
+SystemdXray(){
 
 # insatll xray systemd
 cat > /etc/systemd/system/xray.service << EOF
@@ -236,18 +134,99 @@ LimitNOFILE=1000000
 WantedBy=multi-user.target
 EOF
 
-# enable xray 
-systemctl daemon-reload
-systemctl enable xray 
+	# enable xray 
+	systemctl daemon-reload
+	systemctl enable xray 
+
+
+}
+
+InstallXray(){
+	cd $TEMP_PATH 
+
+	curl -LOk $XRAY_CORE_DOWNLOAD_PATH
+	unzip xray-linux-64.zip
+	
+	mv -f xray /etc/xray/bin/xray 
+	mv -f geosite.dat /etc/xray/bin/
+	mv -f geoip.dat /etc/xray/bin/
+	chmod +x /etc/xray/bin/xray
+
+	DefaultConfigXray
+
+	SystemdXray
+	
+}
+
+# aks caddy or nginx 
+InstallHttpServer(){
+	echo "请选择安装 http 前置代理程序: 默认 caddy2 :"
+	echo "1) Caddy2"
+	echo "2) Nginx"
+	echo "3) DIY 自己手动设置"
+	read -r -p "请选择:" INPUT
+	case $INPUT in 
+	1)
+		echo '还没写呢'
+		;;
+	2)
+		echo 'nginx还没写呢'
+		;;
+	3)
+		echo ' 自己动手丰衣足食'
+		HTTP_SERVER=diy
+		;;
+	*)
+		echo '选的什么乱七八糟的,重新选择'
+	esac
+
+}
+
+SaveProxyConfigToFile(){
+	echo PROXY_CORE=$PROXY_CORE >> /etc/xray/sh/conf/config.sh
+	echo HTTP_SERVER=$HTTP_SERVER >> /etc/xray/sh/conf/config.sh
+}
+
+
+Main(){
+	# init tools command 
+	InitTools 
+	# make a temp 
+	TEMP_PATH=$(mktemp -d)
+	# try get the package 
+	cd $TEMP_PATH 
+	curl -LOk $OKPROXY_DOWNLOAD_PATH 
+	unzip okproxy.zip
+	# make floder 
+	MakeFloder 
+	# move xray files to /etc/xray 
+	cd xray 
+	mv * /etc/xray/
+	# make run command 
+	ln -sf /etc/xray/xray.sh /usr/local/bin/xray
+	chmod +x /usr/local/bin/xray
+	echo "alias xray=/usr/local/bin/xray" >>/root/.bashrc
+	# get and install xray and default config 
+	InstallXray
+	echo "api port is 10086 "
+	# disable firewalld
+	echo "请自行设置防火墙. 由于需要配合 面板,所以这里不禁用端口了" 
+	
+	# aks install caddy or nginx ?
+	InstallHttpServer 
+
+	SaveProxyConfigToFile
+
+	# del temp 
+	rm -rf $TEMP_PATH
+	# run the default config
+	xray 
+
+}
+
+Main 
 
 
 
-#
-### disable firewalld / ufw 
 
-systemctl stop firewalld 
-systemctl disable firewalld 
-
-systemctl stop ufw 
-systemctl disable ufw 
 
