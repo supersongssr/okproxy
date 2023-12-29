@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-OKPROXY_DOWNLOAD_PATH=github.comxxxxx  # 安装包下载地址
+OKPROXY_DOWNLOAD_PATH=https://github.com/supersongssr/okproxy/archive/refs/tags/v0.0.1.zip
 XRAY_CORE_DOWNLOAD_PATH=https://github.com/xtls/xray-Core/releases/latest/download/xray-linux-64.zip
 PROXY_CORE=xray  # xray v2fly v2ray ...
 HTTP_SERVER=
