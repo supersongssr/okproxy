@@ -1,8 +1,8 @@
 #!/bin/bash
 
-
-OKPROXY_DOWNLOAD_PATH=https://github.com/supersongssr/okproxy/archive/refs/tags/v0.0.1.zip
-XRAY_CORE_DOWNLOAD_PATH=https://github.com/xtls/xray-Core/releases/latest/download/xray-linux-64.zip
+OKPROXY_GIT_URL=https://github.com/supersongssr/okproxy.git
+OKPROXY_DOWNLOAD_URL=https://github.com/supersongssr/okproxy/archive/refs/tags/v0.0.1.zip
+XRAY_CORE_DOWNLOAD_URL=https://github.com/xtls/xray-Core/releases/latest/download/xray-linux-64.zip
 PROXY_CORE=xray  # xray v2fly v2ray ...
 HTTP_SERVER=
 # httpServer 
@@ -12,7 +12,7 @@ InitTools(){
 	[[ $(type -P wget) ]] || apt install -y wget 
 	[[ $(type -P vnstat) ]] || apt install -y vnstat 
 	[[ $(type -P unzip) ]] || apt install -y unzip
-	[[ $(type -P git)]] || apt isntall -y git 
+	[[ $(type -P git) ]] || apt install -y git 
 }
 
 MakeFloder(){
@@ -145,7 +145,7 @@ EOF
 InstallXray(){
 	cd $TEMP_PATH 
 
-	curl -Lk $XRAY_CORE_DOWNLOAD_PATH -o xray-core.zip
+	curl -Lk $XRAY_CORE_DOWNLOAD_URL -o xray-core.zip
 	unzip -o xray-core.zip
 	
 	mv -f xray /etc/xray/bin/xray 
@@ -196,8 +196,10 @@ Main(){
 	TEMP_PATH=$(mktemp -d)
 	# try get the package 
 	cd $TEMP_PATH 
-	curl -Lk $OKPROXY_DOWNLOAD_PATH  -o okproxy.zip
-	unzip -o okproxy.zip
+	# curl -Lk $OKPROXY_DOWNLOAD_URL  -o okproxy.zip
+	# unzip -o okproxy.zip
+	git clone https://github.com/supersongssr/okproxy.git
+	cd okproxy
 	# make floder 
 	MakeFloder 
 	# move xray files to /etc/xray 
