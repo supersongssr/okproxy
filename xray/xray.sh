@@ -102,17 +102,25 @@ AskDomain(){
 }
 
 GetDomainDNS(){
-    [[ $1 ]] || exit 
-    domainIP=$(host $1 | grep "has address" | awk '{print $4}')
-    domainIPv6=$(host $1 | grep "has IPv6 address" | awk '{print $5}')
+    [[ $1 ]] || return 
+    # domainIP=$(host $1 | grep "has address" | awk '{print $4}')
+    # domainIPv6=$(host $1 | grep "has IPv6 address" | awk '{print $5}')
+    if [[ $2 == '6' ]];then 
+        _type=aaaa
+    else 
+        _type=a
+    fi 
+
+    RETURN=$(wget -qO- --header="accept: application/dns-json" "https://one.one.one.one/dns-query?name=$1&type=$_type")
     
 }
 
 CheckDomainDNS(){
-    GetDomainDNS $domain
-    if [[ $ip && $domainIP == $ip ]] ;then 
+    GetDomainDNS $domain 
+    if [[ $ip && $RETURN == $ip ]] ;then 
         echo '域名 '$domain' 绑定IP是:'$domainIP
         echo 'ipv4解析成功'
+        return 
     else 
         echo 'ipv4解析失败'
         echo '回车继续检测'
@@ -120,13 +128,15 @@ CheckDomainDNS(){
         CheckDomainDNS 
     fi 
 
-    if [[ $ipv6 && $domainIPv6 == $ipv6 ]];then 
+    GetDomainDNS $domain 6
+    if [[ $ipv6 && $RETURN == $ipv6 ]];then 
         echo '域名 '$domain ' 绑定 ipv6 成功'
+        return 
     else 
         echo 'ipv6解析失败'
         echo '回车 继续检测'
         read INPUT 
-        CheckDomainDNS
+        CheckDomainDNS 
     fi 
 
 }
