@@ -42,6 +42,8 @@ systemctl daemon-reload
 # install xray core 
 InstallXray(){
 
+	mkdir -p /etc/okproxy/xray/bin/
+
 	InstallXrayCore
 	
 	SystemdXray

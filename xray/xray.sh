@@ -146,7 +146,7 @@ Add(){
         vless-grpc-tls
         vless-tcp-vision-reality
     )
-    if [[ $1 ]];then
+    if [[ $1 ]] ; then
         INPUT=$1
     else 
         echo '======= 选择配置 ======='
@@ -164,10 +164,10 @@ Add(){
         tls=tls
         type=grpc
         protocol=vless 
-        GetUUID ; uuid=$RETURN
-        GetPort ; port=$RETURN
-        GetPath ; path=$RETURN 
-        GetPort ; proxyPort=$RETURN # 获取内部转发端口
+        GetUUID && uuid=$RETURN
+        GetPort && port=$RETURN
+        GetPath && path=$RETURN 
+        GetPort && proxyPort=$RETURN # 获取内部转发端口
         httpPort=$port #这里的 http端口 就是 默认端口了. 然后其他的再说吧
         tag=vless-grpc-tls-$domain-$port 
         CheckDomainDNS $domain
