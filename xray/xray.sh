@@ -5,16 +5,16 @@ RETURN=   # 设定这是函数的默认返回值
 PROXY_CORE=xray
 SH_VER=v0.0.1
 SH_AUTHER=okproxy
-PATH=/etc/okproxy/xray # 获取当前工作目录
+PROXY_PATH=/etc/okproxy/xray # 获取当前工作目录
 OKPROXY_PATH=/etc/okproxy
 i=0 #一些运行循环次数统计
 XRAY_CORE_DOWNLOAD_URL=https://github.com/xtls/xray-Core/releases/latest/download/xray-linux-64.zip
 
 # load #
-source $PATH/env/config.sh # 加载初始配置
+source $PROXY_PATH/env/config.sh # 加载初始配置
 source $OKPROXY_PATH/libs/functions.sh # 加载函数
 source $OKPROXY_PATH/libs/tools.sh  # 加载工具
-source $PATH/sh/run.sh # 加载控制函数
+source $PROXY_PATH/sh/run.sh # 加载控制函数
 
 
 # functions #
