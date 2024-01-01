@@ -31,7 +31,7 @@ GetPublicIP() {
     fi
  
     local _currentIP=
-    _currentIP=$(curl -s "-${type}" http://www.cloudflare.com/cdn-cgi/trace | grep "ip" | awk -F "[=]" '{print $2}')
+    _currentIP=$(curl -s "$_type" http://www.cloudflare.com/cdn-cgi/trace | grep "ip" | awk -F "[=]" '{print $2}')
     if [[ -z "${_currentIP}" && -z "$1" ]]; then
         _currentIP=$(curl -s "-6" http://www.cloudflare.com/cdn-cgi/trace | grep "ip" | awk -F "[=]" '{print $2}')
     fi
