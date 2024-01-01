@@ -25,7 +25,7 @@ User=root
 CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 NoNewPrivileges=true
-ExecStart=/etc/xray/bin/xray run -config /etc/xray/config.json -confdir /etc/xray/conf
+ExecStart=/etc/okproxy/xray/bin/xray run -config /etc/okproxy/xray/config.json -confdir /etc/okproxy/xray/conf
 Restart=on-failure
 RestartPreventExitStatus=23
 LimitNPROC=10000
@@ -74,7 +74,7 @@ SaveConfigs(){ # $1=filename
 ProxyAddConfig(){
 	case $1 in 
 	vless-grpc-tls)
-		echo > /etc/xray/conf/$tag.json << EOF 
+		echo > /etc/okproxy/xray/conf/$tag.json << EOF 
 {
 	"inbounds": [
 		{

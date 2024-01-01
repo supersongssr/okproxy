@@ -3,7 +3,7 @@ XrayAddConfigFile(){
     case $1 in 
 
     vless-tcp-vision-reality-tls)
-        cat > /etc/xray/conf/vless-tcp-vision-reality-tls.json << EOF 
+        cat > /etc/okproxy/xray/conf/vless-tcp-vision-reality-tls.json << EOF 
 {
   "inbounds": [
     {
