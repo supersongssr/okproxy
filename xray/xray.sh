@@ -161,8 +161,9 @@ AskConfig(){
     protocol=vless 
     GetUUID && uuid=$RETURN
     GetPort && port=$RETURN
-    GetPath && path=$RETURN 
+    GetPath && serviceName=$RETURN 
     GetPort && proxyPort=$RETURN # 获取内部转发端口
+    path=$ServiceName
     httpPort=$port #这里的 http端口 就是 默认端口了. 然后其他的再说吧
     tag=$1-$domain-$port 
     CheckDomainDNS $domain
@@ -231,6 +232,25 @@ Info(){
     cd /etc/okproxy/xray/env/
     source $configurationFile 
     ShowProxyInfo $proxyConfiguration
+}
+
+Del(){
+    configurationList=($(ls /etc/okproxy/xray/env))
+    if [[ $1 ]];then 
+        configurationFile=$1.sh 
+    else 
+        echo '------------  '
+        echo '请选择要删除的配置文件:'
+        echo 
+        ShowList ${configurationList[@]}
+        read INPUT
+        configurationFile=${configurationList[$INPUT -1]}
+    fi 
+    rm -rf /etc/okproxy/xray/env/$configurationFile
+    configurationFileOfXray=${configurationFile/.sh/.json}
+    rm -rf /etc/okproxy/xray/conf/$configurationFileOfXray 
+    systemctl restart xray 
+    # 还有一个删除 http的配置文件没写. 以后再写吧
 }
 
 Main(){

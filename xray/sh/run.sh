@@ -62,6 +62,7 @@ SaveConfigFile(){ # $1=filename
 	# 保存这些参数到 文件中去,到时候用的时候,直接加载就好了
 	_file=/etc/okproxy/xray/env/$1
 	echo > $_file
+	[[ $proxyConfiguration ]] && echo proxyConfiguration=$proxyConfiguration >> $_file
 	[[ $protocol ]] && echo protocol=$protocol >> $_file
 	[[ $type ]] && echo type=$type >> $_file
 	[[ $tag ]] && echo tag=$tag >> $_file
