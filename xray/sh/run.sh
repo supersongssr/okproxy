@@ -7,10 +7,10 @@ InstallXrayCore(){
 	curl -Lk $XRAY_CORE_DOWNLOAD_URL -o core.zip
 	unzip -o core.zip
 	
-	mv -f xray /etc/xray/bin/xray 
-	mv -f geosite.dat /etc/xray/bin/
-	mv -f geoip.dat /etc/xray/bin/
-	chmod +x /etc/xray/bin/xray
+	mv -f xray /etc/okproxy/xray/bin/xray 
+	mv -f geosite.dat /etc/okproxy/xray/bin/
+	mv -f geoip.dat /etc/okproxy/xray/bin/
+	chmod +x /etc/okproxy/xray/bin/xray
 }
 
 SystemdXray(){
