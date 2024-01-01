@@ -51,3 +51,20 @@ GetPort() {
     done
     RETURN=$_port 
 }
+
+
+GetDomainDNSJsonByCF(){ # 4 6 
+    [[ $1 ]] || return 
+    # domainIP=$(host $1 | grep "has address" | awk '{print $4}')
+    # domainIPv6=$(host $1 | grep "has IPv6 address" | awk '{print $5}')
+    if [[ $2 == '6' ]];then 
+        _type=aaaa
+    else 
+        _type=a
+    fi 
+
+    RETURN=$(wget -qO- --header="accept: application/dns-json" "https://one.one.one.one/dns-query?name=$1&type=$_type")
+    
+}
+
+

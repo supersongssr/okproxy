@@ -16,8 +16,127 @@ source $OKPROXY_PATH/libs/functions.sh # 加载函数
 source $OKPROXY_PATH/libs/tools.sh  # 加载工具
 source $PROXY_PATH/sh/run.sh # 加载控制函数
 
+# bash fonts colors
+red='\e[31m'
+yellow='\e[33m'
+gray='\e[90m'
+green='\e[92m'
+blue='\e[94m'
+magenta='\e[95m'
+cyan='\e[96m'
+none='\e[0m'
 
 # functions #
+
+# error and exit 
+Err(){
+    echo -e ${red}' Error '$@${none}
+    exit 1
+}
+
+AskDomain(){
+    echo 'ask domain start '
+    [[ $domain ]] && return 
+    echo 'ask domain 222'
+    [[ $ip ]] || ip=$(GetPublicIP)
+    [[ $ipv6 ]] || ipv6=$(GetPublicIP 6)
+    echo
+    echo '------------ 需要一个域名 ------------'
+    echo '请将域名解析到 ip: '$ip
+    echo '或 ipv6: '$ipv6
+    echo '稍后会进行 domain 测试是否解析'
+    echo '输入域名:'
+    read domain 
+    if [[ -z $domain ]];then 
+        ((i++))
+        [[ $i -gt 99 ]] && echo '重试太多次了' && exit 1
+        AskDomain 
+    fi 
+    echo $domain
+    
+}
+
+AskDomainDNSCheck(){
+    GetDomainDNSJsonByCF $domain 
+    if [[ $ip && $RETURN =~ $ip ]] ;then 
+        echo '域名 '$domain' 绑定IP是:'$ip
+        echo 'ipv4解析成功'
+        return 
+    else 
+        echo 'ipv4解析失败'
+        echo '回车继续检测'
+        read INPUT
+    fi 
+
+    GetDomainDNSJsonByCF $domain 6
+    if [[ $ipv6 && $RETURN =~ $ipv6 ]];then 
+        echo '域名 '$domain ' 绑定 ipv6 成功:'$ipv6
+        return 
+    else 
+        echo 'ipv6解析失败'
+        echo '回车 继续检测'
+        read INPUT 
+    fi 
+
+    echo '------------ 是否继续检测 DNS ------------'
+    echo 
+    echo '1) 跳过检测'
+    echo '2) 继续检测'
+    echo '0) 退出脚本'
+    read INPUT
+
+    case $INPUT in 
+    1 )
+        return 
+        ;;
+    2 )
+        CheckDomainDNS 
+        ;;
+    0 )
+        exit 1
+        ;;
+    * )
+        Err '没这个选项'
+    esac 
+}
+
+AskConfig(){
+    echo 'ask config start '
+    AskDomain 
+    tls=tls
+    type=grpc
+    protocol=vless 
+    GetUUID && uuid=$RETURN
+    GetPort && port=$RETURN
+    GetPath && serviceName=$RETURN 
+    GetPort && proxyPort=$RETURN # 获取内部转发端口
+    path=$ServiceName
+    httpPort=$port #这里的 http端口 就是 默认端口了. 然后其他的再说吧
+    tag=$1-$domain-$port 
+    AskDomainDNSCheck $domain
+}
+
+Edit(){
+    echo 'edit start'
+    configurationList=($(ls /etc/okproxy/xray/env/))
+    if [[ $1 ]];then 
+        configurationFile=$1.sh
+    else 
+        echo '请选择查看到配置'
+        echo 
+        ShowList ${configurationList[@]}
+        read INPUT
+        configurationFile=${configurationList[$INPUT -1]}
+    fi 
+    cd /etc/okproxy/xray/env/
+
+    echo '剩下的还没写'
+    # 遍历参数, 然后根据反馈,进行调整. 然后让用户输入新参数,
+    # 检测参数中是否包含=号,然后直接写入到配置文件中去就好了.
+    # 然后,重新加载一遍参数,然后 重新配置文件 这应该是最好的方法了.  就是修改参数直接写入配置文件.
+
+
+}
 
 Update(){
     if [[ $1 ]] ;then 
@@ -79,96 +198,6 @@ Install(){
 	
 }
 
-
-AskDomain(){
-    echo 'ask domain start '
-    [[ $domain ]] && return 
-    echo 'ask domain 222'
-    [[ $ip ]] || ip=$(GetPublicIP)
-    [[ $ipv6 ]] || ipv6=$(GetPublicIP 6)
-    echo '请将域名解析到 ip: '$ip
-    echo '或者将域名解析到 ipv6: '$ipv6
-    echo '稍后会进行 domain 测试是否解析'
-    echo '======= 输入域名 ======='
-    echo '输入域名:'
-    read domain 
-    if [[ -z $domain ]];then 
-        ((i++))
-        [[ $i -gt 99 ]] && echo '重试太多次了' && exit 1
-        AskDomain 
-    fi 
-    echo $domain
-    
-}
-
-GetDomainDNS(){
-    [[ $1 ]] || return 
-    # domainIP=$(host $1 | grep "has address" | awk '{print $4}')
-    # domainIPv6=$(host $1 | grep "has IPv6 address" | awk '{print $5}')
-    if [[ $2 == '6' ]];then 
-        _type=aaaa
-    else 
-        _type=a
-    fi 
-
-    RETURN=$(wget -qO- --header="accept: application/dns-json" "https://one.one.one.one/dns-query?name=$1&type=$_type")
-    
-}
-
-CheckDomainDNS(){
-    GetDomainDNS $domain 
-    if [[ $ip && $RETURN =~ $ip ]] ;then 
-        echo '域名 '$domain' 绑定IP是:'$domainIP
-        echo 'ipv4解析成功'
-        return 
-    else 
-        echo 'ipv4解析失败'
-        echo '回车继续检测'
-        read INPUT
-        CheckDomainDNS 
-    fi 
-
-    GetDomainDNS $domain 6
-    if [[ $ipv6 && $RETURN =~ $ipv6 ]];then 
-        echo '域名 '$domain ' 绑定 ipv6 成功'
-        return 
-    else 
-        echo 'ipv6解析失败'
-        echo '回车 继续检测'
-        read INPUT 
-        CheckDomainDNS 
-    fi 
-
-}
-
-HttpAddConfig(){
-    if [[ $httpServer == 'caddy2' ]] ;then 
-        caddy2Config $1 
-    elif [[ $httpServer == 'nginx' ]] ;then 
-        nginxConfig $1 
-    elif [[ $httpServer == 'diy' ]] ;then 
-        diyConfig $1 
-    else 
-        echo '没设定httpServer呢'
-    fi 
-}
-
-AskConfig(){
-    echo 'ask config start '
-    AskDomain 
-    tls=tls
-    type=grpc
-    protocol=vless 
-    GetUUID && uuid=$RETURN
-    GetPort && port=$RETURN
-    GetPath && serviceName=$RETURN 
-    GetPort && proxyPort=$RETURN # 获取内部转发端口
-    path=$ServiceName
-    httpPort=$port #这里的 http端口 就是 默认端口了. 然后其他的再说吧
-    tag=$1-$domain-$port 
-    CheckDomainDNS $domain
-}
-
 Add(){
     proxyConfigurationList=(
         vless-grpc-tls
@@ -206,12 +235,14 @@ Add(){
 
     AskConfig $proxyConfiguration
     ProxyAddConfig $proxyConfiguration 
+    systemctl restart xray 
+
     HttpAddConfig $proxyConfiguration
-    SaveConfigFile $tag.sh
+    SaveConfigFile $tag
 
     ShowProxyInfo $proxyConfiguration
 
-    systemctl restart xray 
+    
 
 	# ConfigXray $proxyProtocol
 
@@ -234,10 +265,11 @@ Info(){
     ShowProxyInfo $proxyConfiguration
 }
 
+
 Del(){
     configurationList=($(ls /etc/okproxy/xray/env))
     if [[ $1 ]];then 
-        configurationFile=$1.sh 
+        configurationFile=$1.sh
     else 
         echo '------------  '
         echo '请选择要删除的配置文件:'
@@ -246,11 +278,46 @@ Del(){
         read INPUT
         configurationFile=${configurationList[$INPUT -1]}
     fi 
-    rm -rf /etc/okproxy/xray/env/$configurationFile
-    configurationFileOfXray=${configurationFile/.sh/.json}
-    rm -rf /etc/okproxy/xray/conf/$configurationFileOfXray 
+
+    # _tag=${configurationFile/.sh/}
+    _tag=${configurationFile%.*}   # 截取文件名 : tag
+
+    # del sh config 
+    rm -rf /etc/okproxy/xray/env/$_tag.sh
+    
+    # del proxy config 
+    rm -rf /etc/okproxy/xray/conf/$_tag.json
     systemctl restart xray 
-    # 还有一个删除 http的配置文件没写. 以后再写吧
+
+    # del http config 
+    echo 'del http config 还没写'
+
+}
+
+Status(){
+    if [[ $1 ]];then 
+        INPUT=$1
+    else 
+        echo 
+        echo '------------ 请选择 ------------'
+        echo '1) xray运行状态'
+        echo '2) caddy2运行状态'
+        echo '3) nginx 运行状态'
+        echo 
+        echo '请输入[0-9]:'
+        read INPUT 
+    fi 
+    case $INPUT in 
+    1 | xray)
+        systemctl status xray 
+        ;;
+    2 | caddy2)
+        echo '还没写呢 caddy2运行状态'
+        ;;
+    *)
+        echo '选的啥呀'
+        ;;
+    esac
 }
 
 Main(){
@@ -259,24 +326,24 @@ Main(){
 	else 
 		# 1 ask user to choice action 
 		echo "请选择操作命令:"
-		echo '======= 代理操作 ======='
+		echo '------------ 代理操作 ------------'
 		echo '1) add 增加代理 '
 		echo '2) edit 修改代理 '
 		echo '3) info 查询代理信息 '
 		echo '4) del 删除代理 [慎用]'
 		echo 
-		echo '======= 脚本控制 ======='
+		echo '------------ 脚本控制 ------------'
 		echo '6) status 运行状态'
 		echo 
-		echo '======= 系统操作 ======='
+		echo '------------ 系统操作 ------------'
 		echo '11) update 升级'
 		echo '12) install 安装'
 		echo '13) uninstall 卸载'
         echo 
-        echo '======= 退出脚本'
+        echo '------------ 退出脚本 ------------'
         echo '0) 退出脚本'
 		echo
-		echo "请选择数字:"
+		echo "请选择[数字]:"
 		read INPUT
 	fi
 
@@ -297,6 +364,9 @@ Main(){
     4 | del)
 		Del $2
 		;;
+    6 | status)
+        Status $2
+        ;;
 	11 | update)
 		Update $2
 		;;
@@ -308,9 +378,9 @@ Main(){
 		;;
     *)
         ((i++))
-        [[ $i -gt 99 ]] && echo '重试次数太多,告退了' && exit 1
+        [[ $i -gt 99 ]] && Err '重试次数太多,告退了' 
 		echo "命令不存在,重新选择"
-		Run
+		Main
         ;;
     esac
 }

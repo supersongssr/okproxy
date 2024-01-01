@@ -25,17 +25,10 @@ MakeTempPath(){
 
 # 获取公网IP
 GetPublicIP() {
-    local _type=4
-    if [[ -n "$1" ]]; then
-        _type=$1
-    fi
+    _type=$1
+    [[ $_type == '6' ]] || _type=4
  
-    local _currentIP=
-    _currentIP=$(curl -s -"$_type" http://www.cloudflare.com/cdn-cgi/trace | grep "ip" | awk -F "[=]" '{print $2}')
-    if [[ -z "${_currentIP}" && -z "$1" ]]; then
-        _currentIP=$(curl -s "-6" http://www.cloudflare.com/cdn-cgi/trace | grep "ip" | awk -F "[=]" '{print $2}')
-    fi
-    echo "${_currentIP}"
+    RETURN=$(curl -s -"$_type" http://www.cloudflare.com/cdn-cgi/trace | grep "ip" | awk -F "[=]" '{print $2}')
+    echo $RETURN
 
 }
-

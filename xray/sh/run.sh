@@ -60,7 +60,8 @@ InstallXray(){
 
 SaveConfigFile(){ # $1=filename
 	# 保存这些参数到 文件中去,到时候用的时候,直接加载就好了
-	_file=/etc/okproxy/xray/env/$1
+	[[ $1 ]] || Err '咋没参数呢 save config file run.sh-63'
+	_file=/etc/okproxy/xray/env/$1.sh
 	echo > $_file
 	[[ $proxyConfiguration ]] && echo proxyConfiguration=$proxyConfiguration >> $_file
 	[[ $protocol ]] && echo protocol=$protocol >> $_file
@@ -149,4 +150,17 @@ ShowProxyInfo(){
 		;;
 	esac 
 
+}
+
+
+HttpAddConfig(){
+    if [[ $httpServer == 'caddy2' ]] ;then 
+        caddy2Config $1 
+    elif [[ $httpServer == 'nginx' ]] ;then 
+        nginxConfig $1 
+    elif [[ $httpServer == 'diy' ]] ;then 
+        diyConfig $1 
+    else 
+        echo '没设定httpServer呢'
+    fi 
 }
