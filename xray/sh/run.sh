@@ -113,7 +113,11 @@ EOF
 
 UpdateOKProxy(){
 	cd /etc/okproxy 
-	git pull 
+	git fetch
+	git reset --hard HEAD
+	git merge '@{u}'
+	chmod +x /usr/local/bin/xray
+ 
 }
 
 ShowProxyInfo(){

@@ -101,7 +101,7 @@ GetDomainDNS(){
 
 CheckDomainDNS(){
     GetDomainDNS 
-    if [[ $ip]] && [[ $domainIP == $ip ]] ;then 
+    if [[ $ip && $domainIP == $ip ]] ;then 
         echo '域名 '$domain' 绑定IP是:'$domainIP
         echo 'ipv4解析成功'
     else 
@@ -111,7 +111,7 @@ CheckDomainDNS(){
         CheckDomainDNS 
     fi 
 
-    if [[ $ipv6 ]] && [[ $domainIPv6 == $ipv6 ]];then 
+    if [[ $ipv6 && $domainIPv6 == $ipv6 ]];then 
         echo '域名 '$domain ' 绑定 ipv6 成功'
     else 
         echo 'ipv6解析失败'
