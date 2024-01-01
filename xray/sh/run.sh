@@ -58,7 +58,7 @@ InstallXray(){
 
 }
 
-SaveConfigs(){ # $1=filename
+SaveConfigFile(){ # $1=filename
 	# 保存这些参数到 文件中去,到时候用的时候,直接加载就好了
 	_file=/etc/okproxy/xray/env/$1
 	echo > $_file
@@ -75,8 +75,7 @@ SaveConfigs(){ # $1=filename
 
 
 ProxyAddConfig(){
-	case $1 in 
-	vless-grpc-tls)
+	if [[ $1 == vless-grpc-tls ]] ;then 
 		echo > /etc/okproxy/xray/conf/$tag.json << EOF 
 {
 	"inbounds": [
@@ -110,8 +109,7 @@ ProxyAddConfig(){
 	]
 }
 EOF
-		;;
-	esac 
+	fi 
 }
 
 UpdateOKProxy(){

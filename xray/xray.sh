@@ -206,7 +206,7 @@ Add(){
     AskConfig $proxyConfiguration
     ProxyAddConfig $proxyConfiguration 
     HttpAddConfig $proxyConfiguration
-    SaveConfig $tag.sh
+    SaveConfigFile $tag.sh
 
     ShowProxyInfo $proxyConfiguration
 
