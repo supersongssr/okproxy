@@ -19,7 +19,7 @@ MakeAppAlias(){
     ln -sf /etc/okproxy/$_app/$_app.sh /usr/local/bin/$_app
 	chmod +x /usr/local/bin/$_app
     sed -i -e '/alias $_app=/d' ~/.bashrc 
-	echo "alias xray=/usr/local/bin/$_app" >> ~/.bashrc
+	echo "alias $_app=/usr/local/bin/$_app" >> ~/.bashrc
     
 }
 
@@ -64,7 +64,7 @@ InstallOKProxy(){
         return 
 	fi 
     cd /etc
-	git clone https://github.com/supersongssr/okproxy.git 
+	git clone $OKPROXY_GIT_URL
 }
 
 Main(){
