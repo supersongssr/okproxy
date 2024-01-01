@@ -97,18 +97,19 @@ AskDomain(){
         [[ $i -gt 99 ]] && echo '重试太多次了' && exit 1
         AskDomain 
     fi 
+    echo $domain
     
 }
 
 GetDomainDNS(){
     [[ $1 ]] || exit 
     domainIP=$(host $1 | grep "has address" | awk '{print $4}')
-    domainIPv6=$(host s136.koggback.top | grep "has IPv6 address" | awk '{print $5}')
+    domainIPv6=$(host $1 | grep "has IPv6 address" | awk '{print $5}')
     
 }
 
 CheckDomainDNS(){
-    GetDomainDNS 
+    GetDomainDNS $domain
     if [[ $ip && $domainIP == $ip ]] ;then 
         echo '域名 '$domain' 绑定IP是:'$domainIP
         echo 'ipv4解析成功'
