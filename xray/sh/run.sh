@@ -66,7 +66,7 @@ SaveConfigFile(){ # $1=filename
 	[[ $type ]] && echo type=$type >> $_file
 	[[ $tag ]] && echo tag=$tag >> $_file
 	[[ $uuid ]] && echo uuid=$uuid >> $_file 
-	[[ $httpPort ]] && echo httpPort=$remotePort >> $_file 
+	[[ $httpPort ]] && echo httpPort=$httpPort >> $_file 
 	[[ $serviceName ]] && echo serviceName=$serviceName >> $_file 
 	[[ $proxyPort ]] && echo proxyPort=$proxyPort >> $_file
 	[[ $port ]] && echo port=$port >> $_file 
@@ -76,7 +76,7 @@ SaveConfigFile(){ # $1=filename
 
 ProxyAddConfig(){
 	if [[ $1 == vless-grpc-tls ]] ;then 
-		echo > /etc/okproxy/xray/conf/$tag.json << EOF 
+		cat > /etc/okproxy/xray/conf/$tag.json << EOF
 {
 	"inbounds": [
 		{

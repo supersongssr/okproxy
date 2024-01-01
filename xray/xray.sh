@@ -228,7 +228,7 @@ Info(){
         read INPUT
         configurationFile=${configurationList[$INPUT -1]}
     fi 
-    cd /etc/okproxy/xray/sh/conf/
+    cd /etc/okproxy/xray/env/
     source $configurationFile 
     ShowProxyInfo $proxyConfiguration
 }
