@@ -117,7 +117,7 @@ GetDomainDNS(){
 
 CheckDomainDNS(){
     GetDomainDNS $domain 
-    if [[ $ip && $RETURN == $ip ]] ;then 
+    if [[ $ip && $RETURN =~ $ip ]] ;then 
         echo '域名 '$domain' 绑定IP是:'$domainIP
         echo 'ipv4解析成功'
         return 
@@ -129,7 +129,7 @@ CheckDomainDNS(){
     fi 
 
     GetDomainDNS $domain 6
-    if [[ $ipv6 && $RETURN == $ipv6 ]];then 
+    if [[ $ipv6 && $RETURN =~ $ipv6 ]];then 
         echo '域名 '$domain ' 绑定 ipv6 成功'
         return 
     else 
@@ -193,6 +193,7 @@ Add(){
         ;;
     2 | vless-tcp-vision-reality)
         echo '啥也没有'
+        return 
         ;;
     *)
         ((i++))
@@ -209,13 +210,15 @@ Add(){
 
     ShowProxyInfo $proxyConfiguration
 
+    systemctl restart xray 
+
 	# ConfigXray $proxyProtocol
 
 }
 
 # show the info of the tag name something ?
 Info(){
-    configurationList=($(ls /etc/okproxy/xray/sh/conf/))
+    configurationList=($(ls /etc/okproxy/xray/env/))
     if [[ $1 ]];then 
         configurationFile=$1.sh
     else 
