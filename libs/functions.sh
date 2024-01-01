@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
-# 如果是函数, 统一用 RETURN 作为返回值 , 获取时,用 $RETURN 
+# 如果是函数, 统一用 RETURN 作为返回值, ERROR 作为 报错值
 ###
 
 # 随机获取 UUID
@@ -22,17 +22,16 @@ GetPath(){
     GetPassword
 }
 
-
 # 判断端口是否被占用
 IsPortUsed() { # $1 = port 
     if [[ $(type -P netstat) ]]; then
         [[ ! $_usedPort ]] && _usedPort="$(netstat -tunlp | sed -n 's/.*:\([0-9]\+\).*/\1/p' | sort -nu)"
-        echo $_usedPort | sed 's/ /\n/g' | grep ^${1}$
+        RETURN=$(echo $_usedPort | sed 's/ /\n/g' | grep ^${1}$)
         return
     fi
     if [[ $(type -P ss) ]]; then
         [[ ! $_usedPort ]] && _usedPort="$(ss -tunlp | sed -n 's/.*:\([0-9]\+\).*/\1/p' | sort -nu)"
-        echo $_usedPort | sed 's/ /\n/g' | grep ^${1}$
+        RETURN=$(echo $_usedPort | sed 's/ /\n/g' | grep ^${1}$)
         return
     fi
 }
@@ -47,7 +46,8 @@ GetPort() {
             break
         fi
         _port=$(shuf -i 445-65535 -n 1)
-        [[ ! $(IsPortUsed $_port) ]] && break
+        IsPortUsed 
+        [[ $RETURN ]] || break
     done
     RETURN=$_port 
 }

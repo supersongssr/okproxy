@@ -1,35 +1,89 @@
 #!/bin/bash
 
 
-SaveConfigs(){ # $1=filename
-	# 保存这些参数到 文件中去,到时候用的时候,直接加载就好了
-	_file=$1
-	echo > $_file
-	echo protocol=$protocol >> $_file
-	echo type=$type >> $_file
-	echo tag=$tag >> $_file
-	echo uuid=$uuid >> $_file 
-	echo remotePort=$remotePort >> $_file 
-	echo serviceName=$serviceName >> $_file 
-	echo xrayPort=$xrayPort >> $_file
+InstallXrayCore(){
+	MakeTempPath
+	cd $TEMP_PATH 
+	curl -Lk $XRAY_CORE_DOWNLOAD_URL -o core.zip
+	unzip -o core.zip
+	
+	mv -f xray /etc/xray/bin/xray 
+	mv -f geosite.dat /etc/xray/bin/
+	mv -f geoip.dat /etc/xray/bin/
+	chmod +x /etc/xray/bin/xray
 }
 
-ConfigVlessGrpcTls(){
-	protocol=vless
-	type=grpc
-	tag=vless-grpc-tls-$domain-$port
-	# config xray
-	echo > /etc/xray/conf/$tag.json << EOF 
+SystemdXray(){
+	cat > /etc/systemd/system/xray.service << EOF
+[Unit]
+Description=Xray Service
+Documentation=https://github.com/xtls
+After=network.target nss-lookup.target
+
+[Service]
+User=root
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+ExecStart=/etc/xray/bin/xray run -config /etc/xray/config.json -confdir /etc/xray/conf
+Restart=on-failure
+RestartPreventExitStatus=23
+LimitNPROC=10000
+LimitNOFILE=1000000
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+
+}
+
+# install xray core 
+InstallXray(){
+
+	InstallXrayCore
+	
+	SystemdXray
+
+	systemctl daemon-reload
+	systemctl enable xray 
+	systemctl start xray 
+
+	echo 'xray install sucess'
+	# xray info xray # 查看 xray 安装 进程
+
+}
+
+SaveConfigs(){ # $1=filename
+	# 保存这些参数到 文件中去,到时候用的时候,直接加载就好了
+	_file=/etc/okproxy/xray/sh/conf/$1
+	echo > $_file
+	[[ $protocol ]] && echo protocol=$protocol >> $_file
+	[[ $type ]] && echo type=$type >> $_file
+	[[ $tag ]] && echo tag=$tag >> $_file
+	[[ $uuid ]] && echo uuid=$uuid >> $_file 
+	[[ $httpPort ]] && echo httpPort=$remotePort >> $_file 
+	[[ $serviceName ]] && echo serviceName=$serviceName >> $_file 
+	[[ $proxyPort ]] && echo proxyPort=$proxyPort >> $_file
+	[[ $port ]] && echo port=$port >> $_file 
+	echo 'save configs done file name :'$_file
+}
+
+
+ProxyAddConfig(){
+	case $1 in 
+	vless-grpc-tls)
+		echo > /etc/xray/conf/$tag.json << EOF 
 {
 	"inbounds": [
 		{
-			"port": $xrayPort,
+			"port": $proxyPort,
 			"protocol": "$protocol",
 			"settings": {
 				"clients": [
 					{
-						"id": "$uuid", 
-						"flow": "xtls-rprx-vision"
+						"id": "$uuid"					
 					}
 				],
 				"decryption": "none"
@@ -53,95 +107,40 @@ ConfigVlessGrpcTls(){
 	]
 }
 EOF
-	# keep configs 
-	
-	SaveConfigs /etc/xray/sh/conf/$tag.sh
-
+		;;
+	esac 
 }
 
-ConfigXray(){ # $1=proxyPortocolList
-	_pp=$1
-	GetUUID 
-	uuid=$RETURN
-	GetPath
-	serviceName=$RETURN
-	GetPort
-	xrayPort=$RETURN
-	
-	read -r -p "请输入外部端口:" remotePort
-	read -r -p "请输入域名:" remoteHost
-	case $_pp in 
+UpdateOKProxy(){
+	cd /etc/okproxy 
+	git pull 
+}
+
+ShowProxyInfo(){
+	echo '------------ proxy配置 '$tag'  ------------'
+	case $1 in 
 	vless-grpc-tls)
-		ConfigVlessGrpcTls 
+		echo '协议 protocol: ' $protocol 
+		echo '地址  address: ' $domain 
+		echo '端口  port : ' $httpPort 
+		echo '用户ID     : ' $uuid 
+		echo '传输协议: network:' $type 
+		echo '伪装域名:  '$domain 
+		echo '路径: ' $serviceName 
+		echo 'tls: ' $tls 
+		echo 
+		echo '------------  链接 URL ------------'
+		echo '还没写'
+		echo '------------ http配置 '$tag'  ------------'
+		echo '域名:' $domain  
+		echo '路径 :' $serviceName 
+		echo '端口: ' $httpPort 
+		echo '转发端口: ' $proxyPort 
+		echo 
 		;;
 	*)
-		echo '还没写'
+		echo '配置信息不存在'
 		;;
-	esac
+	esac 
 
-}
-
-Add(){
-	echo '添加代理'
-	PROXY_PROTOCOL_LIST=(
-		vless-grpc-tls
-		vless-tcp-vision-reality-tls
-	)
-
-	echo "请选择协议和配置:"
-	ShowList ${PROXY_PROTOCOL_LIST[@]}
-	read -r -p "请选择:" INPUT
-	proxyProtocol=${PROXY_PROTOCOL_LIST[$INPUT]}
-	[[ $proxyProtocol ]] || proxyProtocol=${PROXY_PROTOCOL_LIST[0]}  #默认
-	
-	ConfigXray $proxyProtocol
-
-}
-
-Edit(){
-	echo '修改代理配置'
-}
-
-Info(){
-	echo '查询代理配置信息'
-}
-
-Del(){
-	echo '删除代理'
-}
-
-
-Uninstall(){
-	echo 'uninstall: 卸载代理'
-}
-
-run(){
-    # 1 ask user to choice action 
-	echo "请选择操作命令,默认 add:"
-	ACTION_LIST=(add edit info del uninstall) # command 
-	ShowList ${ACTION_LIST[@]}
-	read -r -p "请选择:" INPUT
-	action=${ACTION_LIST[$INPUT]}
-	[[ $action ]] || action=${ACTION_LIST[0]}  # 默认
-
-    case $action in 
-    add) 
-    	Add 
-     	;;
-    edit)
-		Edit 
-		;;
-    info)
-		Info 
-		;;
-    del)
-		Del 
-		;;
-    uninstall)
-		Uninstall 
-		;;
-    *)
-		echo "命令不存在,告退"
-		exit 1
-    esac
 }

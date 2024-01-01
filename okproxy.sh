@@ -1,73 +1,86 @@
 #!/bin/bash
 
-# ask install core 
+# config # 
+OKPROXY_GIT_URL=https://github.com/supersongssr/okproxy.git
 
-# init defalut tools 
+
+# function # 
+
 InitTools(){
-    [[ $(type -P curl) ]] || apt install curl -y &
-    [[ $(type -P wget) ]] || apt install wget -y &
-    [[ $(type -P unzip) ]] || apt install unzip -y & 
+	[[ $(type -P curl) ]] || apt install -y curl 
+	[[ $(type -P wget) ]] || apt install -y wget 
+	[[ $(type -P unzip) ]] || apt install -y unzip
+	[[ $(type -P git) ]] || apt install -y git 
 }
 
-# install xray 
-InstallXray(){
-    [[ -e /etc/xray ]] && echo "/etc/xray已存在,退出" && exit 
-    mkdir -p /etc/xray
-    cd /etc/xray 
-    # curl -LOk xxx
-    # unzipxxx
-
-    # command 
-    ln -sf /etc/xray/xray.sh /usr/local/bin/xray 
-    # alias 
-    echo "alias xray=/usr/local/bin/xray" >> ~/.bashrc 
-    # 运行 xray 命令
-    xray 
+MakeAppAlias(){
+    [[ $1 ]] || return 
+    _app=$1
+    ln -sf /etc/okproxy/$_app/$_app.sh /usr/local/bin/$_app
+	chmod +x /usr/local/bin/$_app
+    sed -i -e '/alias $_app=/d' ~/.bashrc 
+	echo "alias xray=/usr/local/bin/$_app" >> ~/.bashrc
+    
 }
 
+InstallProxyApp(){
+    if [[ $1 ]];then 
+        proxyApp=$1 
+    else 
+        echo '======= 选择代理程序 默认 Xray ======='
+        echo 
+        echo '1) Xray 代理程序 [默认]'
+        echo '2) V2Fly (V2ray v5.x版本)'
+        echo '3) 还不支持'
+        echo 
+        echo '======= '
+        echo '请选择数字:'
+        read proxyApp
+        [[ $proxyApp ]] || proxyApp=1
+    fi
 
-MakeFloder(){
-    mkdir -p /etc/okproxy
-}
-
-# install okproxy 
-InstallOkproxy(){
-    # check if is installed or not 
-    [[ -e /etc/okproxy ]] && exit 
-
-    mkdir -p /etc/okproxy
-
-    cd /etc/okproxy 
-    # curl -LOk  这里需要下载一个 安装包在脚本中. 下载后,就可以去执行这个脚本了! 这个可以有.
-
-    # alias okproxy 
-    echo "alias okproxy=/usr/local/bin/okproxy" >> ~/.bashrc
-    # core command 
-    # core command
-    ln -sf /etc/okproxy/okproxy.sh /usr/local/bin/okproxy
-}
-
-
-
-
-main(){
-    cd "$HOME" || exit
-    InitTools
-    echo "v2fly xray v2ray install script"
-    echo "1. xray install "
-    read _input
-
-    case $_input in 
-    1) 
-        InstallXray
+    case $proxyApp in 
+    1 | xray)
+        MakeAppAlias xray
+        xray install xray 
         ;;
-    *)
-        echo "not yet "
-        exit 
+    2 | v2fly)
+        MakeAppAlias v2fly
+        v2fly install v2fly
         ;;
-    esac
+    * )
+        echo '这个选项还没有'
+        InstallProxyApp 
+    esac 
+
 }
 
-main 
+# install okproxy sh script
+InstallOKProxy(){
+    if [[ -e /etc/okproxy ]] ;then 
+		echo '检测到已安装 okproxy'
+        echo '跳过安装 okproxy'
+        IS_OKPROXY_INSTALLED=/etc/okproxy
+        return 
+	fi 
+    cd /etc
+	git clone https://github.com/supersongssr/okproxy.git 
+}
+
+Main(){
+	# init tools command 
+	InitTools 
+
+	InstallOKProxy
+
+    InstallProxyApp $1 
+
+}
+
+# logic # 
+Main $@
+
+
+
 
 
