@@ -140,6 +140,19 @@ HttpAddConfig(){
     fi 
 }
 
+AskConfig(){
+    AskDomain 
+    tls=tls
+    type=grpc
+    protocol=vless 
+    GetUUID && uuid=$RETURN
+    GetPort && port=$RETURN
+    GetPath && path=$RETURN 
+    GetPort && proxyPort=$RETURN # 获取内部转发端口
+    httpPort=$port #这里的 http端口 就是 默认端口了. 然后其他的再说吧
+    tag=$1-$domain-$port 
+    CheckDomainDNS $domain
+}
 
 Add(){
     proxyConfigurationList=(
@@ -158,25 +171,11 @@ Add(){
 	
     case $INPUT in 
     1 | vless-grpc-tls)
-        AskDomain 
         echo 'vless-grpc-tls 已选择,开搞'
         proxyConfiguration=vless-grpc-tls
-        tls=tls
-        type=grpc
-        protocol=vless 
-        GetUUID && uuid=$RETURN
-        GetPort && port=$RETURN
-        GetPath && path=$RETURN 
-        GetPort && proxyPort=$RETURN # 获取内部转发端口
-        httpPort=$port #这里的 http端口 就是 默认端口了. 然后其他的再说吧
-        tag=vless-grpc-tls-$domain-$port 
-        CheckDomainDNS $domain
         
-        ProxyAddConfig $proxyConfiguration 
-        HttpAddConfig $proxyConfiguration
-        SaveConfig $tag.sh
-
-        ShowProxyInfo $proxyConfiguration
+        
+        
         ;;
     2 | vless-tcp-vision-reality)
         echo '啥也没有'
@@ -188,6 +187,13 @@ Add(){
         Add 
         ;;
     esac
+
+    AskConfig $proxyConfiguration
+    ProxyAddConfig $proxyConfiguration 
+    HttpAddConfig $proxyConfiguration
+    SaveConfig $tag.sh
+
+    ShowProxyInfo $proxyConfiguration
 
 	# ConfigXray $proxyProtocol
 
