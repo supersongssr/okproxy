@@ -20,17 +20,22 @@ source $PROXY_PATH/sh/run.sh # 加载控制函数
 # functions #
 
 Update(){
-	echo "请选择要升级的项目:"
-	echo '======='
-	echo '1) sh控制脚本升级'
-	echo '2) xrayCore 内核版本升级'
-	echo '3) 还没想好'
-	echo '======='
-	echo 
-	echo '请选择数字:'
-	read INPUT
+    if [[ $1 ]] ;then 
+        INPUT=$1
+    else
+        echo "请选择要升级的项目:"
+        echo '======='
+        echo '1) sh控制脚本升级'
+        echo '2) xrayCore 内核版本升级'
+        echo '3) 还没想好'
+        echo '======='
+        echo 
+        echo '请选择数字:'
+        read INPUT
+    fi 
+
 	case $INPUT in 
-	1)
+	1 | sh)
 		UpdateOKProxy
 		;;
 	*)
