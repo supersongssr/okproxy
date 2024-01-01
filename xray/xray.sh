@@ -5,8 +5,8 @@ RETURN=   # 设定这是函数的默认返回值
 PROXY_CORE=xray
 SH_VER=v0.0.1
 SH_AUTHER=okproxy
-PATH=$PWD # 获取当前工作目录
-OKPROXY_PATH=$(dirname "$PWD")
+PATH=/etc/okproxy/xray # 获取当前工作目录
+OKPROXY_PATH=/etc/okproxy
 i=0 #一些运行循环次数统计
 XRAY_CORE_DOWNLOAD_URL=https://github.com/xtls/xray-Core/releases/latest/download/xray-linux-64.zip
 

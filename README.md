@@ -6,7 +6,7 @@ one key proxy ; v2ray v2fly xray
 
 ## install
 ```shell
-bash <(wget -qO- -o- https://raw.githubusercontent.com/supersongssr/okproxy/okproxy.sh)
+bash <(wget -qO- -o- https://raw.githubusercontent.com/supersongssr/okproxy/master/okproxy.sh)
 ```
 
 
