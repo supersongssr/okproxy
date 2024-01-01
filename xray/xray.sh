@@ -81,7 +81,9 @@ Install(){
 
 
 AskDomain(){
+    echo 'ask domain start '
     [[ $domain ]] && return 
+    echo 'ask domain 222'
     [[ $ip ]] || ip=$(GetPublicIP)
     [[ $ipv6 ]] || ipv6=$(GetPublicIP 6)
     echo '请将域名解析到 ip: '$ip
@@ -141,6 +143,7 @@ HttpAddConfig(){
 }
 
 AskConfig(){
+    echo 'ask config start '
     AskDomain 
     tls=tls
     type=grpc
