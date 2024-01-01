@@ -74,6 +74,7 @@ Install(){
         echo 'not yet'
 		echo '重新选择'
 		Install 
+        ;;
 	esac
 	
 }
@@ -178,13 +179,14 @@ Add(){
         ShowProxyInfo $proxyConfiguration
         ;;
     2 | vless-tcp-vision-reality)
-        echo ''
+        echo '啥也没有'
         ;;
     *)
         ((i++))
         [[ $i -gt 99 ]] && exit 1
         echo '选项不存在呢,重新选择'
         Add 
+        ;;
     esac
 
 	# ConfigXray $proxyProtocol
@@ -266,6 +268,7 @@ Main(){
         [[ $i -gt 99 ]] && echo '重试次数太多,告退了' && exit 1
 		echo "命令不存在,重新选择"
 		Run
+        ;;
     esac
 }
 
