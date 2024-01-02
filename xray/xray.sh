@@ -294,6 +294,51 @@ Del(){
 
 }
 
+Start(){
+    if [[ $1 ]];then 
+        INPUT=$1
+    else 
+        echo '------------ 选择 启动的程序'
+        echo '1) xray'
+        echo '请选择[0-9]'
+        read INPUT 
+        [[ $INPUT ]] || INPUT=xray
+    fi
+
+    case $INPUT in 
+    1 | xray)
+        systemctl start xray 
+        ;;
+    *)
+        echo '还没写'
+        ;;
+    esac 
+
+}
+
+Stop(){
+    if [[ $1 ]];then 
+        INPUT=$1
+    else 
+        echo '---------- 选择停止的程序 -----------'
+        echo '1) xray'
+        echo '请选择[0-9]'
+        read INPUT
+        [[ $INPUT ]] || INPUT=xray 
+    fi 
+
+    case $INPUT in 
+    1 | xray)
+        systemctl stop xray 
+        ;;
+    *)
+        echo 'not yet '
+        ;;
+    esac 
+}
+
+
+
 Status(){
     if [[ $1 ]];then 
         INPUT=$1
@@ -334,6 +379,8 @@ Main(){
 		echo 
 		echo '------------ 脚本控制 ------------'
 		echo '6) status 运行状态'
+        echo '7) start '
+        echo '8) stop '
 		echo 
 		echo '------------ 系统操作 ------------'
 		echo '11) update 升级'
@@ -364,8 +411,14 @@ Main(){
     4 | del)
 		Del $2
 		;;
-    6 | status)
+    6 | status | stat)
         Status $2
+        ;;
+    7 | start)
+        Start $2 
+        ;;
+    8 | stop)
+        Stop $2 
         ;;
 	11 | update)
 		Update $2
