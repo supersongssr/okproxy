@@ -90,7 +90,7 @@ AskDomainDNSCheck(){
         return 
         ;;
     2 )
-        CheckDomainDNS 
+        AskDomainDNSCheck 
         ;;
     0 )
         exit 1
