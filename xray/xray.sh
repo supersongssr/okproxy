@@ -80,23 +80,25 @@ AskDomainDNSCheck(){
 
     echo '------------ 是否继续检测 DNS ------------'
     echo 
-    echo '1) 跳过检测'
-    echo '2) 继续检测'
+    echo '1) 再检测试试'
+    echo '2) 不检测了,跳过  '
     echo '0) 退出脚本'
     read INPUT
+    [[ $INPUT ]] || INPUT=2
 
     case $INPUT in 
     1 )
-        return 
+        AskDomainDNSCheck 
         ;;
     2 )
-        AskDomainDNSCheck 
+         return
         ;;
     0 )
         exit 1
         ;;
     * )
         Err '没这个选项'
+        AskDomainDNSCheck
     esac 
 }
 

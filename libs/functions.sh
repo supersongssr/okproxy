@@ -45,7 +45,7 @@ GetPort() {
             echo "试了99次都没拿到可用端口,绝了"
             break
         fi
-        _port=$(shuf -i 445-65535 -n 1)
+        _port=$(shuf -i 12345-54321 -n 1)
         IsPortUsed 
         [[ $RETURN ]] || break
     done
