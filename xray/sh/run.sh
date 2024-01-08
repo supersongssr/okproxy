@@ -177,7 +177,7 @@ HttpAddConfig(){
 }
 
 UninstallShScript(){
-	sed -i -e '/alias $_app=/d' ~/.bashrc 
+	sed -i -e '/alias xray=/d' ~/.bashrc 
 	unalias xray 
 	echo '安装成功'
 }
