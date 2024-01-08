@@ -58,6 +58,17 @@ InstallXray(){
 
 }
 
+UninstallXray(){
+	rm -rf /etc/okproxy/xray/bin/*
+	rm -rf /etc/okproxy/xray/conf/*
+	systemctl stop xray 
+	systemctl disable xray 
+	rm -rf /etc/systemd/system/xray.service
+	systemctl daemon-reload
+	echo 'del xray finished '
+    
+}
+
 SaveConfigFile(){ # $1=filename
 	# 保存这些参数到 文件中去,到时候用的时候,直接加载就好了
 	[[ $1 ]] || Err '咋没参数呢 save config file run.sh-63'
@@ -163,4 +174,10 @@ HttpAddConfig(){
     else 
         echo '没设定httpServer呢'
     fi 
+}
+
+UninstallShScript(){
+	sed -i -e '/alias $_app=/d' ~/.bashrc 
+	unalisa xray 
+	echo '安装成功'
 }

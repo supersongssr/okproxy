@@ -17,20 +17,16 @@ source $PROXY_PATH/config.sh # 加载初始配置
 source $PROXY_PATH/sh/run.sh # 加载控制函数
 
 # bash fonts colors
-red='\e[31m'
-yellow='\e[33m'
-gray='\e[90m'
-green='\e[92m'
-blue='\e[94m'
-magenta='\e[95m'
-cyan='\e[96m'
-none='\e[0m'
+INFO_MSG="\033[32m[信息]\033[0m :"
+ERROR_MSG="\033[31m[错误]\033[0m :"
+WARNING_MSG="\033[33m[警告]\033[0m :"
+TIP_MSG="\033[32m[注意]\033[0m :"
 
 # functions #
 
 # error and exit 
 Err(){
-    echo -e ${red}' Error '$@${none}
+    echo -e "$ERROR_MSG $@ "
     exit 1
 }
 
@@ -198,6 +194,35 @@ Install(){
         ;;
 	esac
 	
+}
+
+
+
+# uninstall something 
+Uninstall(){
+    if [[ $1 ]];then 
+        INPUT=$1
+    else 
+        clear 
+        echo '------------------------ 卸载选项 ------------------------'
+        echo '1) xray卸载'
+        echo '2) sh控制脚本'
+        echo 
+        echo '请输入[0-9]:'
+        read INPUT 
+    fi 
+
+    case $INPUT in 
+    1 | xray)
+        UninstallXray 
+        ;;
+    2 | sh)
+        UninstallShScript
+        ;;
+    *)
+        echo '还没这个选项呢'
+        ;;
+    esac 
 }
 
 Add(){
